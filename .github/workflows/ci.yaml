@@ -57,7 +57,7 @@ jobs:
       - name: Test issue \#8832
         run: |
           pnpm prisma:db-push
-          pnpx test
+          pnpm test
         working-directory: './packages/issue-8832'
         env:
           DATABASE_URL: ${{ env.DATABASE_POSTGRES_URL }}
