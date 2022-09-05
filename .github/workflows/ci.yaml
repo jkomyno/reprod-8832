@@ -2,84 +2,62 @@ name: CI workflow
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - 'LICENSE'
+      - '.dockerignore'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  docker:
-    runs-on: ${{ matrix.os }}
+  test:
+    runs-on: 'ubuntu-latest'
 
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
-
-    name: "Docker: ${{ matrix.os }}"
+        node: ['18.8.0'] 
 
     env:
       DOCKER_BUILDKIT: 1
-      COMPOSE_DOCKER_CLI_BUILD: 1
-      CI: 1 
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Cache pnpm modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-
-      - name: Build Docker pnpm image
-        run: docker build -f Dockerfile.pnpm ./packages -t pnpm
-
-  build:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: ['16.14.0', '18.0.0']
-
-    name: "Build: ${{ matrix.os }}, Node.js ${{ matrix.node }}"
-
-    env:
-      CI: 1
+      COMPOSE_DOCKER_CLI_BUILD: 1 
+      DATABASE_POSTGRES_URL: "postgres://prisma:prisma@localhost:5432/tests"
 
     steps:
       - name: Prepare git
         run: git config --global core.autocrlf false
 
-      - uses: actions/checkout@v3
-
-      - name: Cache pnpm modules
-        uses: actions/cache@v2
+      - name: Check out repository
+        uses: actions/checkout@v3
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
+          persist-credentials: false
 
-      - uses: pnpm/action-setup@v2.1.0
+      - name: Run docker/docker-compose.yml
+        run: docker-compose -f docker/docker-compose.yml up -d
+
+      - uses: pnpm/action-setup@v2.2.2
         with:
-          version: 6.32.3
           run_install: false
-      
+          version: 7
+
+      - name: User Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'pnpm'
+
       - name: Install dependencies
         run: pnpm i
 
-      - name: Transpile TS to JS
-        run: pnpm build
-
-      - name: Run eslint
-        run: pnpm eslint-check
-
-      - name: Run prettier
-        run: pnpm prettier-check
-
-      - name: Run unit tests
-        run: pnpm test:unit
+      - name: Test issue \#8832
+        run: |
+          pnpx prisma db push
+          pnpx test
+        working-directory: './packages/issue-8832'
+        env:
+          DATABASE_URL: ${{ env.DATABASE_POSTGRES_URL }}

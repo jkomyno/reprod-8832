@@ -1,8 +1,7 @@
 {
   "private": true,
-  "name": "@jkomyno/example",
+  "name": "@prisma/issue-8832",
   "version": "0.1.0",
-  "description": "Example that imports a local package",
   "main": "lib",
   "scripts": {
     "clean": "rimraf lib",
@@ -12,9 +11,11 @@
     "typecheck": "tsc",
     "eslint-check": "eslint \"src/**/*.{js,ts}\"",
     "lint-staged": "lint-staged",
-    "pretest": "jest --clearCache"
+    "pretest": "jest --clearCache",
+    "test": "pnpm test:ci",
+    "test:ci": "JEST_LIB_UNDER_TEST=issue-8832 jest -c ../jest/jest.config.ci.mjs --runInBand"
   },
   "dependencies": {
-    "@jkomyno/common-utils": "workspace:*"
+    "@prisma/client": "^4.3.1"
   }
 }
