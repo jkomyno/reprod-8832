@@ -56,7 +56,7 @@ jobs:
 
       - name: Test issue \#8832
         run: |
-          pnpx prisma db push
+          pnpm prisma:db-push
           pnpx test
         working-directory: './packages/issue-8832'
         env:
