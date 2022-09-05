@@ -1,4 +1,5 @@
 import { PrismaClient } from '../../node_modules/.prisma/client'
+import { normalizeTmpDir } from '../utils/sanitize'
 
 const prisma = new PrismaClient()
 
@@ -54,7 +55,7 @@ describe('issue #8832 with 32766 elements', () => {
   })
 })
 
-describe('issue #8832 with 32767 elements', () => {
+describe.only('issue #8832 with 32767 elements', () => {
   const n = 32767
 
   beforeEach(async () => {
@@ -83,10 +84,10 @@ describe('issue #8832 with 32767 elements', () => {
       })
     } catch (error) {
       const e = error as Error
-      expect(e.message).toMatchInlineSnapshot(`
+      expect(normalizeTmpDir(e.message)).toMatchInlineSnapshot(`
         "
         Invalid \`prisma.tag.findMany()\` invocation in
-        /Users/jkomyno/work/prisma/reprod-8832/packages/issue-8832/__tests__/integration/issue-8832.test.ts:79:24
+        /tmp/dir/issue-8832.test.ts:79:24
 
           76 const ids = await createTags(n)
           77 
@@ -102,7 +103,7 @@ describe('issue #8832 with 32767 elements', () => {
     }
   })
 
-  it('INCLUDE fails with misleading error', async () => {
+  it.only('INCLUDE fails with misleading error', async () => {
     expect.assertions(2)
     await createTags(n)
 
@@ -114,15 +115,15 @@ describe('issue #8832 with 32767 elements', () => {
       })
     } catch (error) {
       const e = error as Error
-      expect(e.message).toMatchInlineSnapshot(`
+      expect(normalizeTmpDir(e.message)).toMatchInlineSnapshot(`
         "
         Invalid \`prisma.tag.findMany()\` invocation in
-        /Users/jkomyno/work/prisma/reprod-8832/packages/issue-8832/__tests__/integration/issue-8832.test.ts:110:24
+        /tmp/dir/issue-8832.test.ts:111:24
 
-          107 await createTags(n)
-          108 
-          109 try {
-        → 110   await prisma.tag.findMany(
+          108 await createTags(n)
+          109 
+          110 try {
+        → 111   await prisma.tag.findMany(
         Can't reach database server at \`localhost\`:\`5432\`
 
         Please make sure your database server is running at \`localhost\`:\`5432\`."
