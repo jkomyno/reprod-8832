@@ -40,8 +40,9 @@ importers:
     specifiers:
       '@prisma/client': 4.3.1
       prisma: 4.3.1
-    devDependencies:
+    dependencies:
       '@prisma/client': 4.3.1_prisma@4.3.1
+    devDependencies:
       prisma: 4.3.1
 
 packages:
@@ -717,16 +718,15 @@ packages:
     dependencies:
       '@prisma/engines-version': 4.3.0-32.c875e43600dfe042452e0b868f7a48b817b9640b
       prisma: 4.3.1
-    dev: true
+    dev: false
 
   /@prisma/engines-version/4.3.0-32.c875e43600dfe042452e0b868f7a48b817b9640b:
     resolution: {integrity: sha512-8yWpXkQRmiSfsi2Wb/ZS5D3RFbeu/btL9Pm/gdF4phB0Lo5KGsDFMxFMgaD64mwED2nHc8ZaEJg/+4Jymb9Znw==}
-    dev: true
+    dev: false
 
   /@prisma/engines/4.3.1:
     resolution: {integrity: sha512-4JF/uMaEDAPdcdZNOrnzE3BvrbGpjgV0FcPT3EVoi6I86fWkloqqxBt+KcK/+fIRR0Pxj66uGR9wVH8U1Y13JA==}
     requiresBuild: true
-    dev: true
 
   /@sinclair/typebox/0.24.35:
     resolution: {integrity: sha512-iN6ehuDndiTiDz2F+Orv/+oHJR+PrGv+38oghCddpsW4YEZl5qyLsWxSwYUWrKEOfjpGtXDFW6scJtjpzSLeSw==}
@@ -2972,7 +2972,6 @@ packages:
     requiresBuild: true
     dependencies:
       '@prisma/engines': 4.3.1
-    dev: true
 
   /prompts/2.4.2:
     resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}
