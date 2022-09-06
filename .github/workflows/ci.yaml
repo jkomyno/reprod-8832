@@ -54,10 +54,27 @@ jobs:
       - name: Install dependencies
         run: pnpm i
 
-      - name: Test issue \#8832
+      - name: Expect success when QUERY_BATCH_SIZE is not set, or it's <= 32766
         run: |
           pnpm prisma:db-push
-          pnpm test
+          pnpm test -- -t 'QUERY_BATCH_SIZE not set externally'
+          QUERY_BATCH_SIZE=32766 pnpm test -- -t 'QUERY_BATCH_SIZE set externally'
+          QUERY_BATCH_SIZE=1000 pnpm test -- -t 'QUERY_BATCH_SIZE set externally'
         working-directory: './packages/issue-8832'
         env:
           DATABASE_URL: ${{ env.DATABASE_POSTGRES_URL }}
+
+      - name: Expect failure when QUERY_BATCH_SIZE is > 32766
+        id: expect-failure-large-query-batch-size
+        continue-on-error: true
+        run: |
+          QUERY_BATCH_SIZE=32767 pnpm test -- -t 'QUERY_BATCH_SIZE set externally'
+        working-directory: './packages/issue-8832'
+        env:
+          DATABASE_URL: ${{ env.DATABASE_POSTGRES_URL }}
+
+      - name: Assert failure in previous step
+        if: steps.expect-failure-large-query-batch-size.outcome == 'success' && steps.expect-failure-large-query-batch-size.conclusion == 'success'
+        run: |
+          echo "Expect test to fail with QUERY_BATCH_SIZE=32767, but it didn't"
+          exit 1
