@@ -1,6 +1,6 @@
-## Reproduction of #8832
+# Reproduction of #8832
 
-### Setup
+## Setup
 
 - Set environment variables:
 
@@ -11,14 +11,18 @@ export DATABASE_URL=$DATABASE_POSTGRES_URL
 
 - Spin up docker-compose: `docker-compose -f docker/docker-compose.yml up`
 
-### Reproduction
+## Reproduction
 
-- `pnpm i`
+- Install dependencies: `pnpm i`
 - `cd packages/issue-8832`
 - `export DATABASE_URL=$DATABASE_POSTGRES_URL`
-- `pnpx prisma db push`
+- Push schema to DB: `npm run prisma:db-push`
 
-#### With `QUERY_BATCH_SIZE` defined outside the Node.js process 
+### Tests
+
+Tests contain snapshots and several variation of the cases that lead to the underlying issue.
+
+#### With `QUERY_BATCH_SIZE` defined outside the Node.js process:
 
 When `QUERY_BATCH_SIZE` is less than or equal to `32766`, querying more than `32766` records works without errors.
 
@@ -32,3 +36,8 @@ Notice that the following test should fail:
 #### Without `QUERY_BATCH_SIZE`, or defining it from `process.env`:
 
 - `pnpm test -- -t 'QUERY_BATCH_SIZE not set externally'`
+
+### Manual Scripts (optional)
+
+- `pnpm dev`
+- When prompted `Insert # of records: `, enter e.g. `32767`

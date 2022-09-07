@@ -14,7 +14,8 @@
     "pretest": "jest --clearCache",
     "test": "pnpm test:ci",
     "test:ci": "JEST_LIB_UNDER_TEST=issue-8832 jest -c ../jest/jest.config.ci.mjs --runInBand",
-    "prisma:db-push": "prisma db push"
+    "prisma:db-push": "prisma db push",
+    "dev": "ts-node src/index.ts"
   },
   "dependencies": {
     "@prisma/client": "4.3.1"
