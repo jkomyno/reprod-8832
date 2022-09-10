@@ -1,4 +1,5 @@
 import { PrismaClient } from '.prisma/client'
+import { normalizeTmpDir } from '../utils/sanitize'
 
 const prisma = new PrismaClient()
 
@@ -29,7 +30,33 @@ describe('QUERY_BATCH_SIZE set externally', () => {
       await clean()
     }, 10_000)
 
-    it('$queryRaw succeeds', async () => {
+    it('$queryRaw fails', async () => {
+      expect.assertions(2)
+      const ids = await createTags(n)
+
+      try {
+        await prisma.$queryRaw<unknown[]>`
+        SELECT *
+        FROM tag
+        WHERE "id" IN (${ids.join(', ')})
+      `
+      } catch (error) {
+        const e = error as Error
+        expect(normalizeTmpDir(e.message)).toMatchInlineSnapshot(`
+          "
+          Invalid \`prisma.$queryRaw()\` invocation:
+
+
+          Raw query failed. Code: \`42883\`. Message: \`db error: ERROR: operator does not exist: integer = text
+          HINT: No operator matches the given name and argument type(s). You might need to add explicit type casts.\`"
+        `)
+
+        // @ts-ignore
+        expect(e.code).toEqual('P2010')
+      }
+    })
+
+    it('$queryRawUnsafe succeeds', async () => {
       const ids = await createTags(n)
       const tags = await prisma.$queryRawUnsafe<unknown[]>(`
         SELECT * FROM tag

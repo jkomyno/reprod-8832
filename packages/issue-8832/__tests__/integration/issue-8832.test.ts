@@ -29,7 +29,33 @@ describe('QUERY_BATCH_SIZE not set externally', () => {
       await clean()
     }, 10_000)
 
-    it('$queryRaw succeeds', async () => {
+    it('$queryRaw fails', async () => {
+      expect.assertions(2)
+      const ids = await createTags(n)
+
+      try {
+        await prisma.$queryRaw<unknown[]>`
+        SELECT *
+        FROM tag
+        WHERE "id" IN (${ids.join(', ')})
+      `
+      } catch (error) {
+        const e = error as Error
+        expect(normalizeTmpDir(e.message)).toMatchInlineSnapshot(`
+          "
+          Invalid \`prisma.$queryRaw()\` invocation:
+
+
+          Raw query failed. Code: \`42883\`. Message: \`db error: ERROR: operator does not exist: integer = text
+          HINT: No operator matches the given name and argument type(s). You might need to add explicit type casts.\`"
+        `)
+
+        // @ts-ignore
+        expect(e.code).toEqual('P2010')
+      }
+    })
+
+    it('$queryRaw unsafe succeeds', async () => {
       const ids = await createTags(n)
       const tags = await prisma.$queryRawUnsafe<unknown[]>(`
         SELECT * FROM tag
@@ -92,12 +118,12 @@ describe('QUERY_BATCH_SIZE not set externally', () => {
         expect(normalizeTmpDir(e.message)).toMatchInlineSnapshot(`
           "
           Invalid \`prisma.tag.findMany()\` invocation in
-          /tmp/dir/issue-8832.test.ts:85:26
+          /tmp/dir/issue-8832.test.ts:95:26
 
-            82 const ids = await createTags(n)
-            83 
-            84 try {
-          → 85   await prisma.tag.findMany(
+            92 const ids = await createTags(n)
+            93 
+            94 try {
+          → 95   await prisma.tag.findMany(
           Can't reach database server at \`localhost\`:\`5432\`
 
           Please make sure your database server is running at \`localhost\`:\`5432\`."
@@ -126,12 +152,12 @@ describe('QUERY_BATCH_SIZE not set externally', () => {
         expect(normalizeTmpDir(e.message)).toMatchInlineSnapshot(`
           "
           Invalid \`prisma.tag.findMany()\` invocation in
-          /tmp/dir/issue-8832.test.ts:119:26
+          /tmp/dir/issue-8832.test.ts:129:26
 
-            116 const ids = await createTags(n)
-            117 
-            118 try {
-          → 119   await prisma.tag.findMany(
+            126 const ids = await createTags(n)
+            127 
+            128 try {
+          → 129   await prisma.tag.findMany(
           Can't reach database server at \`localhost\`:\`5432\`
 
           Please make sure your database server is running at \`localhost\`:\`5432\`."
@@ -159,12 +185,12 @@ describe('QUERY_BATCH_SIZE not set externally', () => {
         expect(normalizeTmpDir(e.message)).toMatchInlineSnapshot(`
           "
           Invalid \`prisma.tag.findMany()\` invocation in
-          /tmp/dir/issue-8832.test.ts:152:26
+          /tmp/dir/issue-8832.test.ts:162:26
 
-            149 await createTags(n)
-            150 
-            151 try {
-          → 152   await prisma.tag.findMany(
+            159 await createTags(n)
+            160 
+            161 try {
+          → 162   await prisma.tag.findMany(
           Can't reach database server at \`localhost\`:\`5432\`
 
           Please make sure your database server is running at \`localhost\`:\`5432\`."
@@ -193,12 +219,12 @@ describe('QUERY_BATCH_SIZE not set externally', () => {
         expect(normalizeTmpDir(e.message)).toMatchInlineSnapshot(`
           "
           Invalid \`prisma.tag.findMany()\` invocation in
-          /tmp/dir/issue-8832.test.ts:186:26
+          /tmp/dir/issue-8832.test.ts:196:26
 
-            183 await createTags(n)
-            184 
-            185 try {
-          → 186   await prisma.tag.findMany(
+            193 await createTags(n)
+            194 
+            195 try {
+          → 196   await prisma.tag.findMany(
           Can't reach database server at \`localhost\`:\`5432\`
 
           Please make sure your database server is running at \`localhost\`:\`5432\`."
