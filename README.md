@@ -16,7 +16,7 @@ export DATABASE_URL=$DATABASE_POSTGRES_URL
 - Install dependencies: `pnpm i`
 - `cd packages/issue-8832`
 - `export DATABASE_URL=$DATABASE_POSTGRES_URL`
-- Push schema to DB: `npm run prisma:db-push`
+- Push schema to DB: `pnpm prisma:db-push`
 
 ### Tests
 
@@ -37,7 +37,90 @@ Notice that the following test should fail:
 
 - `pnpm test -- -t 'QUERY_BATCH_SIZE not set externally'`
 
-### Manual Scripts (optional)
+### Manual Scripts
 
-- `pnpm dev`
-- When prompted `Insert # of records: `, enter e.g. `32767`
+Manual scripts can optionally be run to observe how different Prisma Client APIs behave w.r.t. a change of parameters,
+and help comparing the output with a third-party postgres client like `pg-promise`.
+
+Scripts querying records using the Prisma Client APIs are prefixed with `prisma:`, whereas the ones querying records using `pg-promise` are prefixed with `pg:`.
+
+Scripts support the following parameters (all optional), which are either read from the environment variables (as a default), or
+can be supplied from stdin when prompted:
+
+| Parameter        | Description                                               | Type     | Default |
+| -----------------| --------------------------------------------------------- | -------- | ------- |
+| `N_RECORDS`      | Number of records to create/read                          | `uint`   | `-`     |
+| `CREATE_RECORDS` | Wheter to populate the db                                 | `yes|no` | `yes`   |
+| `CLEAN_RECORDS`  | Wheter to truncate the db before any other db interaction | `yes|no` | `yes`   |
+
+#### Raw (unparameterized) queries
+
+- `pnpm prisma:raw`
+- `pnpm pg:raw`
+
+*Example*:
+
+```bash
+N_RECORDS=100000 pnpm prisma:raw
+```
+
+which roughly translates to:
+
+```ts
+const n = 100000
+const ids = Array.from({ length: n }, (_, i) => i + 1)
+await prisma.$queryRawUnsafe<unknown[]>(`
+    SELECT *
+    FROM tag
+    WHERE "id" IN (${ids.join(', ')})
+`)
+```
+
+#### Parameterized queries
+
+- `pnpm prisma:params`
+- `pnpm pg:params`
+
+*Example*:
+
+```bash
+N_RECORDS=32767 pnpm prisma:params
+```
+
+which roughly translates to:
+
+```ts
+const n = 32767
+const ids = Array.from({ length: n }, (_, i) => i + 1)
+const idsParams = ids.map((paramIdx) => `\$${paramIdx}`)
+
+await prisma.$queryRawUnsafe<unknown[]>(`
+    SELECT *
+    FROM tag
+    WHERE "id" IN (${idsParams.join(', ')})
+  `, ...ids)
+```
+
+#### `findMany` queries
+
+- `pnpm prisma:findMany`
+
+*Example*:
+
+```bash
+N_RECORDS=32767 pnpm prisma:findMany
+```
+
+which roughly translates to:
+
+```ts
+const n = 32766
+const ids = Array.from({ length: n }, (_, i) => i + 1)
+const tags = await prisma.tag.findMany({
+  where: {
+    id: {
+      in: ids
+    }
+  }
+})
+```
