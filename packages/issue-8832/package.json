@@ -15,10 +15,18 @@
     "test": "pnpm test:ci",
     "test:ci": "JEST_LIB_UNDER_TEST=issue-8832 jest -c ../jest/jest.config.ci.mjs --runInBand",
     "prisma:db-push": "prisma db push",
-    "dev": "ts-node src/index.ts"
+
+    "prisma:raw": "ts-node src/prismaClient/raw.ts",
+    "prisma:params": "ts-node src/prismaClient/params.ts",
+    "prisma:findMany": "ts-node src/prismaClient/findMany.ts",
+
+    "pg:raw": "ts-node src/pgPromise/raw.ts",
+    "pg:params": "ts-node src/pgPromise/params.ts"
   },
   "dependencies": {
-    "@prisma/client": "4.3.1"
+    "@prisma/client": "4.3.1",
+    "pg-promise": "^10.12.0",
+    "zod": "^3.19.0"
   },
   "devDependencies": {
     "prisma": "4.3.1"
